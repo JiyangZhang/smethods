@@ -29,11 +29,11 @@ public class MethodLevelStaticDepsBuilder {
     public static void main(String... args) throws Exception {
         // We need at least the argument that points to the root
         // directory where the search for .class files will start.
-        if (args.length < 1) {
+        if (args.length < 2) {
             throw new RuntimeException("Incorrect arguments");
         }
         String pathToStartDir = args[0];
-
+        String targetProject = args[1];
         HashSet classPaths = new HashSet<>(Files.walk(Paths.get(pathToStartDir))
                 .filter(Files::isRegularFile).filter(f -> (f.toString().endsWith(".class"))) // &&
                                                                                              // f.toString().contains("target")
@@ -43,28 +43,30 @@ public class MethodLevelStaticDepsBuilder {
         findMethodsinvoked(classPaths);
 
         // suppose that test classes have Test in their class name
-        Set<String> testClasses = new HashSet<>();
-        for (String method : methodName2MethodNames.keySet()) {
-            String className = method.split("#|\\$")[0];
-            if (className.contains("Test")) {
-                testClasses.add(className);
-            }
-        }
+        // Set<String> testClasses = new HashSet<>();
+        // for (String method : methodName2MethodNames.keySet()) {
+        // String className = method.split("#|\\$")[0];
+        // if (className.contains("Test")) {
+        // testClasses.add(className);
+        // }
+        // }
 
-        Map<String, Set<String>> test2methods = getDepsSingleThread(testClasses);
+        // Map<String, Set<String>> test2methods = getDepsSingleThread(testClasses);
 
         // create Macros.STARTS_ROOT_DIR_NAME folder if not exist
         if (!Files.exists(Paths.get(Macros.SMETHODS_ROOT_DIR_NAME))) {
             Files.createDirectory(Paths.get(Macros.SMETHODS_ROOT_DIR_NAME));
         }
         // save debugging info
-        FileUtil.saveMap(methodName2MethodNames, Macros.SMETHODS_ROOT_DIR_NAME, "graph.txt");
-        FileUtil.saveMap(hierarchy_parents, Macros.SMETHODS_ROOT_DIR_NAME, "hierarchy_parents.txt");
-        FileUtil.saveMap(hierarchy_children, Macros.SMETHODS_ROOT_DIR_NAME,
-                "hierarchy_children.txt");
-        FileUtil.saveMap(class2ContainedMethodNames, Macros.SMETHODS_ROOT_DIR_NAME,
-                "class2methods.txt");
-        FileUtil.saveMap(test2methods, Macros.SMETHODS_ROOT_DIR_NAME, "test2methods.txt");
+        FileUtil.saveMap(methodName2MethodNames, Macros.SMETHODS_ROOT_DIR_NAME,
+                targetProject + "graph.txt");
+        // FileUtil.saveMap(hierarchy_parents, Macros.SMETHODS_ROOT_DIR_NAME,
+        // "hierarchy_parents.txt");
+        // FileUtil.saveMap(hierarchy_children, Macros.SMETHODS_ROOT_DIR_NAME,
+        // "hierarchy_children.txt");
+        // FileUtil.saveMap(class2ContainedMethodNames, Macros.SMETHODS_ROOT_DIR_NAME,
+        // "class2methods.txt");
+        // FileUtil.saveMap(test2methods, Macros.SMETHODS_ROOT_DIR_NAME, "test2methods.txt");
     }
 
     public static void findMethodsinvoked(Set<String> classPaths) {
