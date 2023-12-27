@@ -35,10 +35,9 @@ public class MethodLevelStaticDepsBuilder {
         String pathToStartDir = args[0];
 
         HashSet classPaths = new HashSet<>(Files.walk(Paths.get(pathToStartDir))
-                .filter(Files::isRegularFile)
-                .filter(f -> (f.toString().endsWith(".class"))) // && f.toString().contains("target")
-                .map(f -> f.normalize().toAbsolutePath().toString())
-                .collect(Collectors.toList()));
+                .filter(Files::isRegularFile).filter(f -> (f.toString().endsWith(".class"))) // &&
+                                                                                             // f.toString().contains("target")
+                .map(f -> f.normalize().toAbsolutePath().toString()).collect(Collectors.toList()));
 
         // find the methods that each method calls
         findMethodsinvoked(classPaths);
@@ -61,8 +60,10 @@ public class MethodLevelStaticDepsBuilder {
         // save debugging info
         FileUtil.saveMap(methodName2MethodNames, Macros.SMETHODS_ROOT_DIR_NAME, "graph.txt");
         FileUtil.saveMap(hierarchy_parents, Macros.SMETHODS_ROOT_DIR_NAME, "hierarchy_parents.txt");
-        FileUtil.saveMap(hierarchy_children, Macros.SMETHODS_ROOT_DIR_NAME, "hierarchy_children.txt");
-        FileUtil.saveMap(class2ContainedMethodNames, Macros.SMETHODS_ROOT_DIR_NAME, "class2methods.txt");
+        FileUtil.saveMap(hierarchy_children, Macros.SMETHODS_ROOT_DIR_NAME,
+                "hierarchy_children.txt");
+        FileUtil.saveMap(class2ContainedMethodNames, Macros.SMETHODS_ROOT_DIR_NAME,
+                "class2methods.txt");
         FileUtil.saveMap(test2methods, Macros.SMETHODS_ROOT_DIR_NAME, "test2methods.txt");
     }
 
@@ -82,8 +83,9 @@ public class MethodLevelStaticDepsBuilder {
         for (String classPath : classPaths) {
             try {
                 ClassReader classReader = new ClassReader(new FileInputStream(new File(classPath)));
-                MethodCallCollectorCV methodClassVisitor = new MethodCallCollectorCV(methodName2MethodNames,
-                        hierarchy_parents, hierarchy_children, class2ContainedMethodNames);
+                MethodCallCollectorCV methodClassVisitor =
+                        new MethodCallCollectorCV(methodName2MethodNames, hierarchy_parents,
+                                hierarchy_children, class2ContainedMethodNames);
                 classReader.accept(methodClassVisitor, ClassReader.SKIP_DEBUG);
             } catch (IOException e) {
                 System.out.println("Cannot parse file: " + classPath);
@@ -95,11 +97,14 @@ public class MethodLevelStaticDepsBuilder {
         // should be considered
         for (String superClass : hierarchy_children.keySet()) {
             if (superClass.contains("Test")) {
-                for (String subClass : hierarchy_children.getOrDefault(superClass, new HashSet<>())) {
-                    for (String methodSig : class2ContainedMethodNames.getOrDefault(superClass, new HashSet<>())) {
+                for (String subClass : hierarchy_children.getOrDefault(superClass,
+                        new HashSet<>())) {
+                    for (String methodSig : class2ContainedMethodNames.getOrDefault(superClass,
+                            new HashSet<>())) {
                         String subClassKey = subClass + "#" + methodSig;
                         String superClassKey = superClass + "#" + methodSig;
-                        methodName2MethodNames.computeIfAbsent(subClassKey, k -> new TreeSet<>()).add(superClassKey);
+                        methodName2MethodNames.computeIfAbsent(subClassKey, k -> new TreeSet<>())
+                                .add(superClassKey);
                     }
                 }
             }
@@ -121,7 +126,8 @@ public class MethodLevelStaticDepsBuilder {
 
         while (!queue.isEmpty()) {
             String currentMethod = queue.pollFirst();
-            for (String invokedMethod : methodName2MethodNames.getOrDefault(currentMethod, new HashSet<>())) {
+            for (String invokedMethod : methodName2MethodNames.getOrDefault(currentMethod,
+                    new HashSet<>())) {
                 if (!visitedMethods.contains(invokedMethod)) {
                     queue.add(invokedMethod);
                     visitedMethods.add(invokedMethod);
@@ -182,7 +188,8 @@ public class MethodLevelStaticDepsBuilder {
         return test2methods;
     }
 
-    public static Set<String> getMethodsFromHierarchies(String currentMethod, Map<String, Set<String>> hierarchies) {
+    public static Set<String> getMethodsFromHierarchies(String currentMethod,
+            Map<String, Set<String>> hierarchies) {
         Set<String> res = new HashSet<>();
         // consider the superclass/subclass, do not have to consider the constructors
         String currentMethodSig = currentMethod.split("#")[1];

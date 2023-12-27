@@ -29,11 +29,13 @@ public class ClassToMethodsCollectorCV extends ClassVisitor {
     }
 
     @Override
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+    public void visit(int version, int access, String name, String signature, String superName,
+            String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         mClassName = name;
         Set<String> parents = hierarchy_parents.getOrDefault(name, new HashSet<>());
-        if (superName != null && !superName.startsWith("java/") && !superName.startsWith("org/junit/")
+        if (superName != null && !superName.startsWith("java/")
+                && !superName.startsWith("org/junit/")
                 && !superName.startsWith(Macros.PROJECT_PACKAGE)) {
             parents.add(superName);
             Set<String> subClasses = hierarchy_children.getOrDefault(superName, new HashSet<>());
@@ -50,8 +52,8 @@ public class ClassToMethodsCollectorCV extends ClassVisitor {
     }
 
     @Override
-    public MethodVisitor visitMethod(int access, final String outerName, final String outerDesc, String signature,
-            String[] exceptions) {
+    public MethodVisitor visitMethod(int access, final String outerName, final String outerDesc,
+            String signature, String[] exceptions) {
         // append arguments to key, remove what after ) of desc
         if (outerName.equals(PROJECT_PACKAGE)) {
             return null;
