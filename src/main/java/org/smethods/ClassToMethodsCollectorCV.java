@@ -58,7 +58,7 @@ public class ClassToMethodsCollectorCV extends ClassVisitor {
         if (outerName.equals(PROJECT_PACKAGE)) {
             return null;
         }
-        String m = outerName + outerDesc.substring(0, outerDesc.indexOf(")") + 1);
+        String m = outerName + "#" + outerDesc;
         Set<String> methods = class2ContainedMethodNames.getOrDefault(mClassName, new TreeSet<>());
         methods.add(m);
         class2ContainedMethodNames.put(mClassName, methods);
